@@ -28,16 +28,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { createFood } from "@/lib/actions"
-
-const foodItems = [
-  "chicken",
-  "beef",
-  "pork",
-]
+import { createFood, createFoodRecord, getFoodItems } from "@/lib/actions"
+import type { Food } from "@/lib/definitions"
+import CreateFoodDialog from "@/components/food-record/createFoodDialog"
 
 export default function FoodRecordPage() {
-  const [selectedFood, setSelectedFood] = React.useState<string>("")
+  const [foodItems, setFoodItems] = React.useState<Food[]>([])
+  const [selectedFood, setSelectedFood] = React.useState<Food | null>(null)
   const [eatDate, setEatDate] = React.useState<Date | undefined>(undefined)
   const [eatTime, setEatTime] = React.useState("00:00")
   const [open, setOpen] = React.useState(false)
@@ -47,8 +44,21 @@ export default function FoodRecordPage() {
     name: "",
     description: "",
   })
+  const [foodLog, setFoodLog] = React.useState({
+    food_id: 0,
+    quantity: "",
+    is_finished: true,
+    meal_time: "",
+  })
+
+  const refreshFoodItems = React.useCallback(async () => {
+    const items = await getFoodItems()
+    setFoodItems(items)
+  }, [])
 
   React.useEffect(() => {
+    refreshFoodItems()
+
     const now = new Date()
     setEatDate(now)
 
@@ -67,6 +77,17 @@ export default function FoodRecordPage() {
     await createFood(brand, name, description)
     setNewFood({ brand: "", name: "", description: "" })
     setIsCreateFoodOpen(false)
+  }
+
+  const handleCreateFoodRecord = async () => {
+    const { food_id, quantity, is_finished, meal_time } = foodLog
+
+    if (food_id <= 0 || !quantity.trim()) {
+      return
+    }
+
+    // Call the createFoodRecord function from your actions
+    await createFoodRecord(food_id, quantity, is_finished, meal_time)
   }
 
   return (
@@ -102,75 +123,34 @@ export default function FoodRecordPage() {
 
         <div className="flex min-w-0 flex-col gap-4 text-sm leading-loose">
           <div className="flex items-center gap-3">
-            <Combobox items={foodItems}>
+            <Combobox
+              items={foodItems}
+              value={selectedFood}
+              itemToStringLabel={(item) => item?.food_name ?? ""}
+              itemToStringValue={(item) => String(item?.id ?? "")}
+              onValueChange={(value) => {
+                const nextFood = value as Food | null
+                setSelectedFood(nextFood)
+                setFoodLog((prev) => ({
+                  ...prev,
+                  food_id: nextFood?.id ?? 0,
+                }))
+              }}
+            >
               <ComboboxInput placeholder="Select a food" />
               <ComboboxContent>
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
                   {foodItems.map((item) => (
-                    <ComboboxItem key={item} value={item}>
-                      {item}
+                    <ComboboxItem key={item.id} value={item}>
+                      {item.food_name}
                     </ComboboxItem>
                   ))}
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
 
-            <Dialog open={isCreateFoodOpen} onOpenChange={setIsCreateFoodOpen}>
-              <DialogTrigger
-                render={
-                  <Button type="button" className="shrink-0">
-                    Create Food
-                  </Button>
-                }
-              />
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add a new food</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <Field>
-                    <FieldLabel htmlFor="new-food-brand">Brand</FieldLabel>
-                    <Input
-                      id="new-food-brand"
-                      value={newFood.brand}
-                      onChange={(event) =>
-                        setNewFood((prev) => ({ ...prev, brand: event.target.value }))
-                      }
-                      placeholder="e.g. Royal Canin"
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="new-food-name">Name</FieldLabel>
-                    <Input
-                      id="new-food-name"
-                      value={newFood.name}
-                      onChange={(event) =>
-                        setNewFood((prev) => ({ ...prev, name: event.target.value }))
-                      }
-                      placeholder="e.g. salmon"
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="new-food-description">Description</FieldLabel>
-                    <Input
-                      id="new-food-description"
-                      value={newFood.description}
-                      onChange={(event) =>
-                        setNewFood((prev) => ({
-                          ...prev,
-                          description: event.target.value,
-                        }))
-                      }
-                      placeholder="e.g. High-quality salmon"
-                    />
-                  </Field>
-                  <Button className="w-full" onClick={handleCreateFood}>
-                    Save Food
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <CreateFoodDialog onCreated={refreshFoodItems} />
           </div>
 
           <FieldGroup className="mx-auto flex-row">

@@ -1,5 +1,13 @@
 import { supabase } from "./supabase"
 
+
+export async function getFoodItems() {
+  const { data, error } = await supabase.from("food").select("id, food_brand, food_name, description")
+  if (error) {
+    throw error
+  }
+  return data
+}
 export async function createFood(brand: string, name: string, description: string) {
   const { error } = await supabase.from("food").insert({
     food_brand: brand,
@@ -13,13 +21,12 @@ export async function createFood(brand: string, name: string, description: strin
   return { brand, name, description }
 }
 
-export async function createFoodRecord(food: string, eatDate: Date, eatTime: string) {
-  const eatDateTime = new Date(eatDate)
-  const [hours, minutes] = eatTime.split(":").map(Number)
-  eatDateTime.setHours(hours, minutes)
+export async function createFoodRecord(food_id: number, quantity: string, is_finished: boolean, meal_time: string) { 
   const { error } = await supabase.from("food_log").insert({
-    food,
-    eat_time: eatDateTime.toISOString(),
+    food_id: food_id,
+    quantity: quantity,
+    is_finished: is_finished,
+    meal_time: meal_time,
   })
   if (error) {
     throw error
