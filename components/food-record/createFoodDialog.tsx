@@ -14,9 +14,10 @@ import { createFood } from "@/lib/actions"
 
 type CreateFoodDialogProps = {
   onCreated?: () => Promise<void> | void
+  createdFailed?: () => void
 }
 
-export default function CreateFoodDialog({ onCreated }: CreateFoodDialogProps) {
+export default function CreateFoodDialog({ onCreated, createdFailed, }: CreateFoodDialogProps) {
   const [isCreateFoodOpen, setIsCreateFoodOpen] = React.useState(false)
   const [newFood, setNewFood] = React.useState({
     brand: "",
@@ -31,10 +32,15 @@ export default function CreateFoodDialog({ onCreated }: CreateFoodDialogProps) {
       return
     }
 
-    await createFood(brand, name, description)
-    await onCreated?.()
-    setNewFood({ brand: "", name: "", description: "" })
-    setIsCreateFoodOpen(false)
+    await createFood(brand, name, description).catch((error) => {
+      console.error("Error creating food:", error)
+      createdFailed?.()
+      setIsCreateFoodOpen(false)
+    }).then(async () => {
+      await onCreated?.()
+      setNewFood({ brand: "", name: "", description: "" })
+      setIsCreateFoodOpen(false)
+    })
   }
 
   return (

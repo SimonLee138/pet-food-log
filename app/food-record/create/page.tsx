@@ -59,7 +59,22 @@ export default function CreateFoodRecordPage() {
   const refreshFoodItems = React.useCallback(async () => {
     const items = await getFoodItems()
     setFoodItems(items)
+    setAlertMessage({
+      variant: "default",
+      title: "Food created successfully!",
+      description: "Your new food has been added to the list.",
+    })
+    setShowAlert(true)
   }, [])
+
+  const createFoodItemsFailed = () => {
+    setAlertMessage({
+      variant: "destructive",
+      title: "Error creating food",
+      description: "There was an error while saving your food.",
+    })
+    setShowAlert(true)
+  }
 
   React.useEffect(() => {
     if (!showAlert) {
@@ -169,7 +184,7 @@ export default function CreateFoodRecordPage() {
               </ComboboxContent>
             </Combobox>
 
-            <CreateFoodDialog onCreated={refreshFoodItems} />
+            <CreateFoodDialog onCreated={refreshFoodItems} createdFailed={createFoodItemsFailed} />
           </div>
 
           <FieldGroup className="mx-auto flex-row">
