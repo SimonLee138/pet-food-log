@@ -8,7 +8,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Food Record", href: "/food-record/create", icon: Search },
   { label: "Log Table", href: "/log-table", icon: Bell },
-  { label: "Profile", href: "/#", icon: User },
+  { label: "Dashboard", href: "/dashboard", icon: User },
 ]
 
 export function MobileNav() {
