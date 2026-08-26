@@ -38,12 +38,44 @@ export async function getTriedFoods() {
       food.finished += 1
     }
   }
-  console.log("foodScores:", foodScores)
+
   return foodScores ?? []
 }
 
-export async function getFavouriteBrands() {
+export async function getTriedBrands() {
+  const FoodLogWithBrandQuery = supabase.from("food_log").select(`food!food_id (food_brand)`).is("is_finished", true)
 
+  type FoodLogWithBrand = QueryData<typeof FoodLogWithBrandQuery>
+  type TriedFood = {
+    food_brand: string
+    count: number
+  }
+
+  const { data, error } = await FoodLogWithBrandQuery
+  if (error) {
+    throw error
+  }
+  const foodLogWithBrand: FoodLogWithBrand = data
+
+  let foodScores: TriedFood[] = []
+  console.log("foodLogWithBrand:", foodLogWithBrand)
+  for (const record of foodLogWithBrand) {
+    const relatedFood = Array.isArray(record.food) ? record.food[0] : record.food
+    const foodBrand = relatedFood?.food_brand
+
+    if (typeof foodBrand !== "string") {
+      continue
+    }
+
+    let food = foodScores.find(f => f.food_brand === foodBrand)
+    if (!food) {
+      food = { food_brand: foodBrand, count: 0 }
+      foodScores.push(food)
+    }
+    food.count += 1
+  }
+
+  return foodScores ?? []
 }
 
 export async function getFoodServings() {
