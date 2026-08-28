@@ -46,8 +46,8 @@ export async function getTriedBrands() {
   const FoodLogWithBrandQuery = supabase.from("food_log").select(`food!food_id (food_brand)`).is("is_finished", true)
 
   type FoodLogWithBrand = QueryData<typeof FoodLogWithBrandQuery>
-  type TriedFood = {
-    food_brand: string
+  type TriedBrand = {
+    brand_name: string
     count: number
   }
 
@@ -57,8 +57,8 @@ export async function getTriedBrands() {
   }
   const foodLogWithBrand: FoodLogWithBrand = data
 
-  let foodScores: TriedFood[] = []
-  console.log("foodLogWithBrand:", foodLogWithBrand)
+  let brandData: TriedBrand[] = []
+
   for (const record of foodLogWithBrand) {
     const relatedFood = Array.isArray(record.food) ? record.food[0] : record.food
     const foodBrand = relatedFood?.food_brand
@@ -67,15 +67,15 @@ export async function getTriedBrands() {
       continue
     }
 
-    let food = foodScores.find(f => f.food_brand === foodBrand)
-    if (!food) {
-      food = { food_brand: foodBrand, count: 0 }
-      foodScores.push(food)
+    let brand = brandData.find(b => b.brand_name === foodBrand)
+    if (!brand) {
+      brand = { brand_name: foodBrand, count: 0 }
+      brandData.push(brand)
     }
-    food.count += 1
+    brand.count += 1
   }
 
-  return foodScores ?? []
+  return brandData ?? []
 }
 
 export async function getFoodServings() {
