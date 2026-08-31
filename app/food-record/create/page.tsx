@@ -36,11 +36,25 @@ type alertMessage = {
   description: string
 }
 
+type ServingSize = {
+  label: string
+  value: number
+}
+
+const serving_sizes: ServingSize[] = [
+  { label: "1/6", value: 0.1667 },
+  { label: "1/4", value: 0.25 },
+  { label: "1/3", value: 0.3333 },
+  { label: "1/2", value: 0.5 },
+  { label: "1", value: 1 },
+]
+
 export default function CreateFoodRecordPage() {
   const now = React.useMemo(() => new Date(), [])
 
   const [foodItems, setFoodItems] = React.useState<Food[]>([])
   const [selectedFood, setSelectedFood] = React.useState<Food | null>(null)
+  const [selectedServingSize, setSelectedServingSize] = React.useState<ServingSize | null>(null)
   const [eatDate, setEatDate] = React.useState<Date | undefined>(now)
   const [eatTime, setEatTime] = React.useState(() => {
     const hours = String(now.getHours()).padStart(2, "0")
@@ -52,7 +66,7 @@ export default function CreateFoodRecordPage() {
   const [alertMessage, setAlertMessage] = React.useState<alertMessage | null>(null)
   const [foodLog, setFoodLog] = React.useState({
     food_id: 0,
-    quantity: "",
+    serving_size: 0,
     is_finished: true,
   })
 
@@ -93,9 +107,9 @@ export default function CreateFoodRecordPage() {
   }, [refreshFoodItems])
 
   const handleCreateFoodRecord = async () => {
-    const { food_id, quantity, is_finished } = foodLog
+    const { food_id, serving_size, is_finished } = foodLog
 
-    if (food_id <= 0 || !quantity.trim()) {
+    if (food_id <= 0 || serving_size <= 0 || !eatDate || !eatTime) {
       return
     }
 
@@ -106,7 +120,7 @@ export default function CreateFoodRecordPage() {
       meal_time: finalMealTime,
     }))
 
-    await createFoodRecord(food_id, quantity, is_finished, finalMealTime).catch((error) => {
+    await createFoodRecord(food_id, serving_size, is_finished, finalMealTime).catch((error) => {
       console.error("Error creating food record:", error)
       setAlertMessage({
         variant: "destructive",
@@ -171,7 +185,7 @@ export default function CreateFoodRecordPage() {
                 }))
               }}
             >
-              <ComboboxInput placeholder="Select a food" />
+              <ComboboxInput placeholder="Food" />
               <ComboboxContent>
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
@@ -189,17 +203,32 @@ export default function CreateFoodRecordPage() {
 
           <FieldGroup className="mx-auto flex-row">
             <Field>
-              <Input
-                type="text"
-                placeholder="Quantity"
-                value={foodLog.quantity}
-                onChange={(event) =>
+              <Combobox
+                items={serving_sizes}
+                value={selectedServingSize}
+                itemToStringLabel={(item) => item?.label ?? ""}
+                itemToStringValue={(item) => String(item?.value ?? "")}
+                onValueChange={(value) => {
+                  const nextServingSize = value as ServingSize | null
+                  setSelectedServingSize(nextServingSize)
                   setFoodLog((prev) => ({
                     ...prev,
-                    quantity: event.target.value,
+                    serving_size: nextServingSize?.value ?? 0,
                   }))
-                }
-              />
+                }}
+              >
+                <ComboboxInput placeholder="Serving size" />
+                <ComboboxContent>
+                  <ComboboxEmpty>No items found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {serving_sizes.map((item) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    ))}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </Field>
             <Field orientation="horizontal">
               <Checkbox

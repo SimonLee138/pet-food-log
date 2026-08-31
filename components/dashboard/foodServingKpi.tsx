@@ -9,8 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"
 import { getFoodServingSize } from "@/lib/dashboardActions"
 
+const DAILY_SERVING_MINIMUM = 2.0
 const DAILY_SERVING_TARGET = 3.5
 
 function getCurrentDayRange() {
@@ -20,8 +22,8 @@ function getCurrentDayRange() {
   endOfDay.setDate(endOfDay.getDate() + 1)
 
   return {
-    dateFrom: startOfDay.toISOString(),
-    dateTo: endOfDay.toISOString(),
+    dateFrom: startOfDay.toDateString(),
+    dateTo: endOfDay.toDateString(),
   }
 }
 
@@ -47,11 +49,19 @@ export default function FoodServingKpi() {
   const progress = totalServingSize === null
     ? 0
     : Math.min((totalServingSize / DAILY_SERVING_TARGET) * 100, 100)
+  const minProgress = totalServingSize === null
+    ? 0
+    : Math.min((totalServingSize / DAILY_SERVING_MINIMUM) * 100, 100)
   const status = hasError
     ? "Unable to load today’s servings"
     : totalServingSize === null
       ? "Loading today’s servings"
       : `${totalServingSize.toFixed(1)} of ${DAILY_SERVING_TARGET} servings`
+  const minStatus = hasError
+    ? "Unable to load today’s servings"
+    : totalServingSize === null
+      ? "Loading today’s servings"
+      : `${totalServingSize.toFixed(1)} of ${DAILY_SERVING_MINIMUM} minimum servings`
 
   return (
     <Card>
@@ -63,19 +73,29 @@ export default function FoodServingKpi() {
         </CardAction>
       </CardHeader>
       <CardContent>
-        <div
-          className="h-2 overflow-hidden rounded-full bg-muted"
-          role="progressbar"
-          aria-label="Daily food serving progress"
+
+        <Progress
+          value={minProgress}
+          aria-label="Daily Minimum food serving progress"
+          aria-valuemin={0}
+          aria-valuemax={DAILY_SERVING_MINIMUM}
+          aria-valuenow={totalServingSize ?? 0}
+        >
+          <ProgressLabel>Minimum</ProgressLabel>
+          <ProgressValue />
+        </Progress>
+        <p className="text-sm text-muted-foreground">{minStatus}</p>
+
+        <Progress
+          value={progress}
+          aria-label="Daily standard food serving progress"
           aria-valuemin={0}
           aria-valuemax={DAILY_SERVING_TARGET}
           aria-valuenow={totalServingSize ?? 0}
         >
-          <div
-            className="h-full bg-chart-1 transition-[width]"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+          <ProgressLabel>Standard</ProgressLabel>
+          <ProgressValue />
+        </Progress>
         <p className="text-sm text-muted-foreground">{status}</p>
       </CardContent>
     </Card>

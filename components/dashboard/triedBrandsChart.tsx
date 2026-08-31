@@ -23,13 +23,8 @@ type TriedBrand = {
 }
 
 const chartConfig = {
-  tried: {
+  count: {
     label: "Completed meals",
-    color: "var(--chart-1)",
-  },
-  finished: {
-    label: "Finished meals",
-    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 

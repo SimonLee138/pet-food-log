@@ -18,6 +18,7 @@ export async function getFoodServingSize(dateFrom: string, dateTo: string) {
       totalServingSize += record.serving_size
     }
   }
+  console.log(`Total serving size from ${dateFrom} to ${dateTo}:`, totalServingSize)
 
   return totalServingSize
 }

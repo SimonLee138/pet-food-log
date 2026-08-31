@@ -21,10 +21,10 @@ export async function createFood(brand: string, name: string, description: strin
   return { brand, name, description }
 }
 
-export async function createFoodRecord(food_id: number, quantity: string, is_finished: boolean, meal_time: string) { 
+export async function createFoodRecord(food_id: number, serving_size: number, is_finished: boolean, meal_time: string) { 
   const { error } = await supabase.from("food_log").insert({
     food_id: food_id,
-    quantity: quantity,
+    serving_size: serving_size,
     is_finished: is_finished,
     meal_time: meal_time,
   })
