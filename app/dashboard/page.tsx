@@ -1,61 +1,30 @@
-"use client"
-
-import * as React from "react"
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
-import { getTriedFoods } from "../../lib/dashboardActions"
+import TriedBrandsChart from "@/components/dashboard/triedBrandsChart"
 import TriedFoodsChart from "@/components/dashboard/triedFoodsChart"
+import FoodServingKpi from "@/components/dashboard/foodServingKpi"
 
-type TriedFood = {
-  food_name: string
-  tried: number
-  finished: number
-}
-
-const chartConfig = {
-  tried: {
-    label: "Completed meals",
-    color: "var(--chart-1)",
-  },
-  finished: {
-    label: "Finished meals",
-    color: "var(--chart-2)",
-  },
-} satisfies ChartConfig
 
 export default function DashboardPage() {
-  const [favouriteFoods, setFavouriteFoods] = React.useState<TriedFood[]>([])
-
-  React.useEffect(() => {
-    const fetchFavouriteFoods = async () => {
-      try {
-        const data = await getTriedFoods()
-        setFavouriteFoods(data)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    fetchFavouriteFoods()
-  }, [])
-
-  const chartData = favouriteFoods.map((food) => ({
-    food: food.food_name,
-    tried: food.tried,
-    finished: food.finished,
-  }))
+  const today = new Intl.DateTimeFormat("en", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date())
 
   return (
     <div className="min-h-svh bg-muted/30">
-      <main className="mx-auto flex max-w-md min-h-svh flex-col gap-4 p-6 pb-24">
-        <h1 className="font-medium text-lg">Dashboard</h1>
+      <main className="mx-auto flex min-h-svh max-w-5xl flex-col gap-5 p-4 pb-24 sm:p-6">
+        <header>
+          <h1 className="font-heading text-2xl font-semibold">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{today}</p>
+        </header>
 
-        <TriedFoodsChart />
+        <section className="grid gap-4 md:grid-cols-2" aria-label="Meal insights">
+          <div className="md:col-span-2">
+            <FoodServingKpi />
+          </div>
+          <TriedFoodsChart />
+          <TriedBrandsChart />
+        </section>
       </main>
     </div>
   )

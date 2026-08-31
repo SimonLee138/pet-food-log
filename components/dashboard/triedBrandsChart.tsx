@@ -5,11 +5,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts"
+import { Pie, PieChart } from "recharts"
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,7 +16,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { getTriedBrands } from "../../lib/dashboardActions"
-import { TrendingUp } from "lucide-react"
 
 type TriedBrand = {
   brand_name: string
@@ -37,6 +35,8 @@ const chartConfig = {
 
 export default function TriedBrandsChart() {
   const [favouriteBrands, setFavouriteBrands] = React.useState<TriedBrand[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [hasError, setHasError] = React.useState(false)
 
   React.useEffect(() => {
     const fetchFavouriteBrands = async () => {
@@ -45,62 +45,67 @@ export default function TriedBrandsChart() {
         setFavouriteBrands(data)
       } catch (error) {
         console.error(error)
+        setHasError(true)
+      } finally {
+        setIsLoading(false)
       }
     }
 
     fetchFavouriteBrands()
   }, [])
 
-  const chartData = favouriteBrands.map((brand) => ({
+  const chartData = favouriteBrands.map((brand, index) => ({
     brand: brand.brand_name,
     count: brand.count,
+    fill: `var(--chart-${(index % 5) + 1})`,
   }))
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pie Chart - Tried Brands</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Completed meals by brand</CardTitle>
+        <CardDescription>Brands your cat has finished</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <PieChart>
-            <ChartTooltip
-              content={<ChartTooltipContent nameKey="food" hideLabel />}
-            />
-            <Pie
-              data={chartData}
-              dataKey="count"
-              labelLine={false}
-              label={({ payload, ...props }) => {
-                return (
-                  <text
-                    cx={props.cx}
-                    cy={props.cy}
-                    x={props.x}
-                    y={props.y}
-                    textAnchor={props.textAnchor}
-                    dominantBaseline={props.dominantBaseline}
-                    fill="var(--foreground)"
-                  >
-                    {payload.count}
-                  </text>
-                )
-              }}
-              nameKey="brand"
-            />
-          </PieChart>
-        </ChartContainer>
+        {isLoading || hasError || chartData.length === 0 ? (
+          <div className="flex aspect-video items-center justify-center text-sm text-muted-foreground" aria-live="polite">
+            {hasError
+              ? "Unable to load brand data."
+              : isLoading
+                ? "Loading brand data..."
+                : "No completed meals yet."}
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <PieChart accessibilityLayer>
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="brand" hideLabel />}
+              />
+              <Pie
+                data={chartData}
+                dataKey="count"
+                labelLine={false}
+                label={({ payload, ...props }) => {
+                  return (
+                    <text
+                      cx={props.cx}
+                      cy={props.cy}
+                      x={props.x}
+                      y={props.y}
+                      textAnchor={props.textAnchor}
+                      dominantBaseline={props.dominantBaseline}
+                      fill="var(--foreground)"
+                    >
+                      {payload.count}
+                    </text>
+                  )
+                }}
+                nameKey="brand"
+              />
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   )
-
 }

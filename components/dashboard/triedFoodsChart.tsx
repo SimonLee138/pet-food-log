@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -17,7 +16,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { getTriedFoods } from "../../lib/dashboardActions"
-import { TrendingUp } from "lucide-react"
 
 type TriedFood = {
   food_name: string
@@ -38,6 +36,8 @@ const chartConfig = {
 
 export default function TriedFoodsChart() {
   const [favouriteFoods, setFavouriteFoods] = React.useState<TriedFood[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [hasError, setHasError] = React.useState(false)
 
   React.useEffect(() => {
     const fetchFavouriteFoods = async () => {
@@ -46,6 +46,9 @@ export default function TriedFoodsChart() {
         setFavouriteFoods(data)
       } catch (error) {
         console.error(error)
+        setHasError(true)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -61,62 +64,63 @@ export default function TriedFoodsChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Tried Foods</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Meal completion by food</CardTitle>
+        <CardDescription>Completed versus finished servings</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            layout="vertical"
-            margin={{ left: 0, right: 16 }}
-          >
-            <CartesianGrid horizontal={false} />
-            <YAxis
-              dataKey="food"
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              tickFormatter={(value) => value.slice(0, 3)}
-              hide
-            />
-            <XAxis dataKey="tried" type="number" hide />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Bar dataKey="tried" radius={5} fill="var(--color-tried)">
-              <LabelList
+        {isLoading || hasError || chartData.length === 0 ? (
+          <div className="flex aspect-video items-center justify-center text-sm text-muted-foreground" aria-live="polite">
+            {hasError
+              ? "Unable to load food data."
+              : isLoading
+                ? "Loading food data..."
+                : "No meals logged yet."}
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              layout="vertical"
+              margin={{ left: 0, right: 16 }}
+            >
+              <CartesianGrid horizontal={false} />
+              <YAxis
                 dataKey="food"
-                position="insideLeft"
-                offset={8}
-                className="fill-(--color-label)"
-                fontSize={12}
+                type="category"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                tickFormatter={(value) => value.slice(0, 3)}
+                hide
               />
-            </Bar>
-            <Bar dataKey="finished" radius={5} fill="var(--color-finished)">
-              <LabelList
-                dataKey="food"
-                position="insideLeft"
-                offset={8}
-                className="fill-(--color-label)"
-                fontSize={12}
+              <XAxis dataKey="tried" type="number" hide />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="line" />}
               />
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+              <Bar dataKey="tried" radius={5} fill="var(--color-tried)">
+                <LabelList
+                  dataKey="food"
+                  position="insideLeft"
+                  offset={8}
+                  className="fill-(--color-label)"
+                  fontSize={12}
+                />
+              </Bar>
+              <Bar dataKey="finished" radius={5} fill="var(--color-finished)">
+                <LabelList
+                  dataKey="food"
+                  position="insideLeft"
+                  offset={8}
+                  className="fill-(--color-label)"
+                  fontSize={12}
+                />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   )
-
 }

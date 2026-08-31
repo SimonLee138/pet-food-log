@@ -1,6 +1,27 @@
 import { supabase } from "./supabase"
 import { QueryData, QueryError, QueryResult } from '@supabase/supabase-js'
 
+export async function getFoodServingSize(dateFrom: string, dateTo: string) {
+  const FoodServingQuery = supabase.from("food_log").select(`serving_size`).gte("meal_time", dateFrom).lt("meal_time", dateTo)
+
+  type FoodServingData = QueryData<typeof FoodServingQuery>
+
+  const { data, error } = await FoodServingQuery
+  if (error) {
+    throw error
+  }
+  const foodServingData: FoodServingData = data
+
+  let totalServingSize = 0
+  for (const record of foodServingData) {
+    if (typeof record.serving_size === "number") {
+      totalServingSize += record.serving_size
+    }
+  }
+
+  return totalServingSize
+}
+
 export async function getTriedFoods() {
   //const { data, error } = await supabase.rpc("get_favourite_foods")
   const FoodLogWithNameQuery = supabase.from("food_log").select(`food!food_id (food_name), is_finished`)
@@ -76,8 +97,4 @@ export async function getTriedBrands() {
   }
 
   return brandData ?? []
-}
-
-export async function getFoodServings() {
-
 }
