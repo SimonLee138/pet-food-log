@@ -1,7 +1,7 @@
 import TriedBrandsChart from "@/components/dashboard/triedBrandsChart"
 import TriedFoodsChart from "@/components/dashboard/triedFoodsChart"
 import FoodServingKpi from "@/components/dashboard/foodServingKpi"
-
+import FoodAcceptanceRateChart from "@/components/dashboard/foodAcceptanceRateChart"
 
 export default function DashboardPage() {
   const today = new Intl.DateTimeFormat("en", {
@@ -24,6 +24,7 @@ export default function DashboardPage() {
           </div>
           <TriedFoodsChart />
           <TriedBrandsChart />
+          <FoodAcceptanceRateChart />
         </section>
       </main>
     </div>
