@@ -99,3 +99,30 @@ export async function getTriedBrands() {
 
   return brandData ?? []
 }
+
+export async function getDailyServing(dateFrom: string, dateTo: string) {
+  const dailyServingQuery = supabase.from("food_log").select(`serving_size, meal_time`).gte("meal_time", dateFrom).lt("meal_time", dateTo)
+  const { data, error } = await dailyServingQuery
+  if (error) {
+    throw error
+  }
+
+  type DailyServing = {
+    date: string
+    serving_size: number
+  }
+  let dailyServing: DailyServing[] = []
+  const foodLog: { serving_size: number; meal_time: string }[] = data
+
+  for (const record of foodLog) {
+    const date = new Date(record.meal_time).toISOString().split("T")[0]
+    let dailyRecord = dailyServing.find(d => d.date === date)
+    if (!dailyRecord) {
+      dailyRecord = { date, serving_size: 0 }
+      dailyServing.push(dailyRecord)
+    }
+    dailyRecord.serving_size += record.serving_size
+  }
+console.log(`Daily serving from ${dateFrom} to ${dateTo}:`, dailyServing)
+  return dailyServing
+}
