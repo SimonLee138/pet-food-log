@@ -66,8 +66,8 @@ export default function FoodServingKpi() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Today&apos;s servings</CardTitle>
-        <CardDescription>Daily target: {DAILY_SERVING_TARGET} servings</CardDescription>
+        <CardTitle>Today&apos;s food</CardTitle>
+        <CardDescription>Target: {DAILY_SERVING_TARGET} servings</CardDescription>
         <CardAction className="text-2xl font-semibold tabular-nums">
           {totalServingSize === null ? "--" : totalServingSize.toFixed(1)}
         </CardAction>
@@ -76,7 +76,7 @@ export default function FoodServingKpi() {
 
         <Progress
           value={minProgress}
-          aria-label="Daily Minimum food serving progress"
+          aria-label="Minimum serving progress"
           aria-valuemin={0}
           aria-valuemax={DAILY_SERVING_MINIMUM}
           aria-valuenow={totalServingSize ?? 0}
@@ -88,7 +88,7 @@ export default function FoodServingKpi() {
 
         <Progress
           value={progress}
-          aria-label="Daily standard food serving progress"
+          aria-label="Target serving progress"
           aria-valuemin={0}
           aria-valuemax={DAILY_SERVING_TARGET}
           aria-valuenow={totalServingSize ?? 0}

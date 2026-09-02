@@ -25,7 +25,7 @@ type TriedFood = {
 
 const chartConfig = {
   tried: {
-    label: "Completed meals",
+    label: "Logged meals",
     color: "var(--chart-1)",
   },
   finished: {
@@ -64,8 +64,8 @@ export default function TriedFoodsChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Meal completion by food</CardTitle>
-        <CardDescription>Completed versus finished servings</CardDescription>
+        <CardTitle>Meals by food</CardTitle>
+        <CardDescription>Logged and finished servings</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading || hasError || chartData.length === 0 ? (

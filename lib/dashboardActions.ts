@@ -101,7 +101,12 @@ export async function getTriedBrands() {
 }
 
 export async function getDailyServing(dateFrom: string, dateTo: string) {
-  const dailyServingQuery = supabase.from("food_log").select(`serving_size, meal_time`).gte("meal_time", dateFrom).lt("meal_time", dateTo)
+  const dailyServingQuery = supabase
+    .from("food_log")
+    .select(`serving_size, meal_time`)
+    .gte("meal_time", dateFrom)
+    .lt("meal_time", dateTo)
+    .order("meal_time", { ascending: true })
   const { data, error } = await dailyServingQuery
   if (error) {
     throw error
@@ -123,8 +128,7 @@ export async function getDailyServing(dateFrom: string, dateTo: string) {
     }
     dailyRecord.serving_size += record.serving_size
   }
-console.log(`Daily serving from ${dateFrom} to ${dateTo}:`, dailyServing)
-  return dailyServing
+  return dailyServing.sort((first, second) => first.date.localeCompare(second.date))
 }
 
 export async function getFoodInventory() {

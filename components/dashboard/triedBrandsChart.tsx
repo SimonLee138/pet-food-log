@@ -58,8 +58,8 @@ export default function TriedBrandsChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Completed meals by brand</CardTitle>
-        <CardDescription>Brands your cat has finished</CardDescription>
+        <CardTitle>Finished meals by brand</CardTitle>
+        <CardDescription>Finished servings</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading || hasError || chartData.length === 0 ? (

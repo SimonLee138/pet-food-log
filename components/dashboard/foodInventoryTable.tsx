@@ -43,8 +43,8 @@ export default function FoodInventoryTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Food inventory</CardTitle>
-        <CardDescription>Remaining food, ordered from lowest stock</CardDescription>
+        <CardTitle>Inventory</CardTitle>
+        <CardDescription>Low stock first</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading || hasError || inventory.length === 0 ? (

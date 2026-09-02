@@ -2,12 +2,11 @@
 
 import * as React from "react"
 import { getDailyServing } from "@/lib/dashboardActions"
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -17,7 +16,6 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { TrendingUp } from "lucide-react"
 
 export const description = "A line chart"
 const chartConfig = {
@@ -27,25 +25,29 @@ const chartConfig = {
   }
 } satisfies ChartConfig
 
-function getCurrentMonthDayRange() {
+function getLastThirtyDaysRange() {
   const now = new Date()
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const endOfDay = new Date()
-  endOfDay.setDate(endOfDay.getDate() + 1)
+  const startOfRange = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 
   return {
-    dateFrom: startOfDay.toDateString(),
-    dateTo: endOfDay.toDateString(),
+    dateFrom: startOfRange.toDateString(),
+    dateTo: endOfToday.toDateString(),
   }
 }
 
 export default function DailyServingChart() {
   const [dailyServingData, setDailyServingData] = React.useState<any[]>([])
+  const maximumServingSize = Math.max(
+    0,
+    ...dailyServingData.map((record) => record.serving_size)
+  )
+  const yAxisMaximum = Math.max(1, Math.ceil(maximumServingSize * 1.2))
 
   React.useEffect(() => {
     const fetchDailyServing = async () => {
-      const { dateFrom, dateTo } = getCurrentMonthDayRange()
-      const data = await getDailyServing('2026-08-01', dateTo)
+      const { dateFrom, dateTo } = getLastThirtyDaysRange()
+      const data = await getDailyServing(dateFrom, dateTo)
       setDailyServingData(data)
     }
     fetchDailyServing()
@@ -53,8 +55,8 @@ export default function DailyServingChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Daily Serving Chart</CardTitle>
-        <CardDescription>Daily serving data for the current month</CardDescription>
+        <CardTitle>Daily servings</CardTitle>
+        <CardDescription>Last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -62,7 +64,8 @@ export default function DailyServingChart() {
             accessibilityLayer
             data={dailyServingData}
             margin={{
-              left: 12,
+              top: 12,
+              left: 16,
               right: 12,
             }}
           >
@@ -72,7 +75,10 @@ export default function DailyServingChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={(value) => {
+                const [, month, day] = String(value).split("-")
+                return `${Number(day)}/${Number(month)}`
+              }}
             />
             <ChartTooltip
               cursor={false}
@@ -89,14 +95,6 @@ export default function DailyServingChart() {
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing daily serving data for the current month
-        </div>
-      </CardFooter>
     </Card>
   )
 }
