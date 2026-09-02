@@ -126,3 +126,35 @@ export async function getDailyServing(dateFrom: string, dateTo: string) {
 console.log(`Daily serving from ${dateFrom} to ${dateTo}:`, dailyServing)
   return dailyServing
 }
+
+export async function getFoodInventory() {
+  const foodInventoryQuery = supabase
+    .from("food_inventory")
+    .select(`quantity_left, unit, last_updated, food!food_id (food_name, food_brand)`)
+    .order("quantity_left", { ascending: true })
+
+  type FoodInventoryData = QueryData<typeof foodInventoryQuery>
+
+  const { data, error } = await foodInventoryQuery
+  if (error) {
+    throw error
+  }
+
+  const foodInventory: FoodInventoryData = data
+
+  return foodInventory.flatMap((record) => {
+    const relatedFood = Array.isArray(record.food) ? record.food[0] : record.food
+
+    if (!relatedFood?.food_name) {
+      return []
+    }
+
+    return [{
+      foodName: relatedFood.food_name,
+      foodBrand: relatedFood.food_brand ?? "Unknown brand",
+      quantityLeft: Number(record.quantity_left),
+      unit: record.unit,
+      lastUpdated: record.last_updated,
+    }]
+  })
+}
