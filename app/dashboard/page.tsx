@@ -5,6 +5,8 @@ import FoodAcceptanceRateChart from "@/components/dashboard/foodAcceptanceRateCh
 import DailyServingChart from "@/components/dashboard/dailyServingChart"
 import FoodInventoryTable from "@/components/dashboard/foodInventoryTable"
 
+export const dynamic = "force-dynamic"
+
 export default function DashboardPage() {
   const today = new Intl.DateTimeFormat("en", {
     weekday: "long",
