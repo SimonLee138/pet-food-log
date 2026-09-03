@@ -1,15 +1,15 @@
-import { supabase } from "./supabase"
+import { createClient } from "./supabase"
 
 
 export async function getFoodItems() {
-  const { data, error } = await supabase.from("food").select("id, food_brand, food_name, description")
+  const { data, error } = await createClient().from("food").select("id, food_brand, food_name, description")
   if (error) {
     throw error
   }
   return data
 }
 export async function createFood(brand: string, name: string, description: string) {
-  const { error } = await supabase.from("food").insert({
+  const { error } = await createClient().from("food").insert({
     food_brand: brand,
     food_name: name,
     description: description,
@@ -22,7 +22,7 @@ export async function createFood(brand: string, name: string, description: strin
 }
 
 export async function createFoodRecord(food_id: number, serving_size: number, is_finished: boolean, meal_time: string) { 
-  const { error } = await supabase.from("food_log").insert({
+  const { error } = await createClient().from("food_log").insert({
     food_id: food_id,
     serving_size: serving_size,
     is_finished: is_finished,

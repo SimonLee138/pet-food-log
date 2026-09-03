@@ -1,8 +1,8 @@
-import { supabase } from "./supabase"
+import { createClient } from "./supabase"
 import { QueryData, QueryError, QueryResult } from '@supabase/supabase-js'
 
 export async function getFoodServingSize(dateFrom: string, dateTo: string) {
-  const FoodServingQuery = supabase.from("food_log").select(`serving_size`).gte("meal_time", dateFrom).lt("meal_time", dateTo)
+  const FoodServingQuery = createClient().from("food_log").select(`serving_size`).gte("meal_time", dateFrom).lt("meal_time", dateTo)
 
   type FoodServingData = QueryData<typeof FoodServingQuery>
 
@@ -25,7 +25,7 @@ export async function getFoodServingSize(dateFrom: string, dateTo: string) {
 
 export async function getTriedFoods() {
   //const { data, error } = await supabase.rpc("get_favourite_foods")
-  const FoodLogWithNameQuery = supabase.from("food_log").select(`food!food_id (food_name), is_finished`)
+  const FoodLogWithNameQuery = createClient().from("food_log").select(`food!food_id (food_name), is_finished`)
 
   type FoodLogWithName = QueryData<typeof FoodLogWithNameQuery>
   type TriedFood = {
@@ -65,7 +65,7 @@ export async function getTriedFoods() {
 }
 
 export async function getTriedBrands() {
-  const FoodLogWithBrandQuery = supabase.from("food_log").select(`food!food_id (food_brand)`).is("is_finished", true)
+  const FoodLogWithBrandQuery = createClient().from("food_log").select(`food!food_id (food_brand)`).is("is_finished", true)
 
   type FoodLogWithBrand = QueryData<typeof FoodLogWithBrandQuery>
   type TriedBrand = {
@@ -101,7 +101,7 @@ export async function getTriedBrands() {
 }
 
 export async function getDailyServing(dateFrom: string, dateTo: string) {
-  const dailyServingQuery = supabase
+  const dailyServingQuery = createClient()
     .from("food_log")
     .select(`serving_size, meal_time`)
     .gte("meal_time", dateFrom)
@@ -132,7 +132,7 @@ export async function getDailyServing(dateFrom: string, dateTo: string) {
 }
 
 export async function getFoodInventory() {
-  const foodInventoryQuery = supabase
+  const foodInventoryQuery = createClient()
     .from("food_inventory")
     .select(`quantity_left, unit, last_updated, food!food_id (food_name, food_brand)`)
     .order("quantity_left", { ascending: true })
